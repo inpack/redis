@@ -8,8 +8,6 @@ description = in-memory data structure store
 
 %build
 
-PREFIX="{{.project__prefix}}"
-
 cd {{.inpack__pack_dir}}/deps
 
 if [ ! -f "redis-{{.project__version}}.tar.gz" ]; then
