@@ -1,0 +1,61 @@
+kind = "AppSpec"
+roles = [101, 100]
+type_tags = ["database"]
+
+[meta]
+  id = "sysinner-redis6-x1"
+  name = "Redis 6"
+  version = "1.0"
+  subtitle = "Redis v6 单机版"
+
+[[packages]]
+  name = "redis6"
+  version = "6.0"
+
+[[executors]]
+  name = "sysinner-redis-x1"
+  exec_start = """
+if pidof redis-server; then
+    exit 0
+fi
+
+mkdir -p /opt/redis/redis6/
+
+rsync -av {{.inpack_prefix_redis6}}/* /opt/redis/redis6/
+
+/home/action/.sysinner/inagent confrender --in /opt/redis/redis6/etc/redis.conf.default --out /opt/redis/redis6/etc/redis.conf
+
+
+/opt/redis/redis6/bin/redis-server /opt/redis/redis6/etc/redis.conf &
+"""
+
+  exec_stop = "killall redis-server"
+  priority = 4
+
+  [executors.plan]
+    on_boot = true
+    on_tick = 0
+
+[[service_ports]]
+  name = "redis"
+  box_port = 6379
+
+[configurator]
+  name = "cfg/sysinner-redis"
+
+  [[configurator.fields]]
+    name = "requirepass"
+    title = "管理密码"
+    type = 1
+    auto_fill = "hexstr_32"
+
+[exp_res]
+  cpu_min = 1
+  mem_min = 64
+  vol_min = 1
+
+[exp_deploy]
+  rep_min = 1
+  rep_max = 1
+  sys_state = 2
+  network_mode = 1

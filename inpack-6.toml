@@ -1,0 +1,42 @@
+[project]
+  name = "redis6"
+  version = "6.0.9"
+  vendor = "redis.io"
+  homepage = "https://redis.io"
+  description = "in-memory data structure store"
+  groups = ["dev/db"]
+
+[files]
+
+[scripts]
+  build = """
+cd {{.inpack__pack_dir}}/deps
+
+if [ ! -f "redis-{{.project__version}}.tar.gz" ]; then
+    wget https://download.redis.io/releases/redis-{{.project__version}}.tar.gz
+fi
+
+if [ -d "redis-{{.project__version}}" ]; then
+    rm -rf redis-{{.project__version}}
+fi
+
+tar -zxf redis-{{.project__version}}.tar.gz
+cd redis-{{.project__version}}
+make -j2
+
+rm -rf   {{.buildroot}}/*
+mkdir -p {{.buildroot}}/{bin,etc,var/log,var/data}
+
+install src/redis-server             {{.buildroot}}/bin/redis-server
+install src/redis-cli                {{.buildroot}}/bin/redis-cli
+
+strip -s {{.buildroot}}/bin/redis-server
+strip -s {{.buildroot}}/bin/redis-cli
+
+cd {{.inpack__pack_dir}}
+install misc/redis.v6.conf.default      {{.buildroot}}/etc/redis.conf.default
+
+# rm -rf {{.inpack__pack_dir}}/deps/redis-{{.project__version}}
+
+"""
+
